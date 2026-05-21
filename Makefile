@@ -3,7 +3,8 @@ BIN ?= $(O)/boot.bin
 CFLAGS := -g -nostdlib -ffreestanding -fno-strict-aliasing -mcpu=cortex-m4 -march=armv7e-m -mthumb
 CROSS_COMPILER ?= arm-none-eabihf
 ELF ?= $(O)/boot.elf
-SRCS := boot.S main.c f446re.c
+LNK ?= src/f446re.ld
+SRCS := src/boot.S src/main.c src/f446re.c
 SYMS ?= $(O)/boot.syms
 
 .PHONY: all clean
@@ -16,8 +17,8 @@ $(BIN): $(ELF)
 $(SYMS): $(ELF)
 	$(CROSS_COMPILER)-objcopy $< --only-keep-debug $@
 
-$(ELF): $(SRCS) linker.ld | $(O)
-	$(CROSS_COMPILER)-gcc $(CFLAGS) -T linker.ld $(SRCS) -o $@
+$(ELF): $(SRCS) $(LNK) | $(O)
+	$(CROSS_COMPILER)-gcc $(CFLAGS) -T $(LNK) $(SRCS) -o $@
 
 $(O):
 	mkdir -p $@

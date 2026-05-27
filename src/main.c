@@ -1,9 +1,9 @@
 #include <stdint.h>
 
-#include "clock.h"
-
 #include "f446re/gpio.h"
 #include "f446re/rcc.h"
+
+#include "hal/clock.h"
 
 static volatile uint32_t *rcc_apb2enr =
     (volatile uint32_t *)(RCC_BASE + RCC_APB2ENR);

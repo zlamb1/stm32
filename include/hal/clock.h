@@ -1,5 +1,5 @@
-#ifndef CLOCK_H
-#define CLOCK_H 1
+#ifndef HAL_CLOCK_H
+#define HAL_CLOCK_H 1
 
 /**
  * @brief Initializes any platform clocks necessary for sleep.

@@ -1,4 +1,8 @@
-#include "f446re/f446re.h"
+#include <stdint.h>
+
+#include "f446re/clock.h"
+#include "f446re/gpio.h"
+#include "f446re/rcc.h"
 
 static volatile uint32_t *rcc_apb2enr =
     (volatile uint32_t *)(RCC_BASE + RCC_APB2ENR);
@@ -6,13 +10,6 @@ static volatile uint32_t *rcc_apb2enr =
 static volatile uint16_t *spi_cr1 = (volatile uint16_t *)0x40013000;
 static volatile uint16_t *spi_sr = (volatile uint16_t *)0x40013008;
 static volatile uint8_t *spi_dr = (volatile uint8_t *)0x4001300C;
-
-gpio A7 = GPIO(GPIO_PORT_A, 7);   // DIN
-gpio A5 = GPIO(GPIO_PORT_A, 5);   // CLK
-gpio A15 = GPIO(GPIO_PORT_A, 15); // CS#
-gpio A10 = GPIO(GPIO_PORT_A, 10); // D/C#
-gpio C9 = GPIO(GPIO_PORT_C, 9);   // RST
-gpio C13 = GPIO(GPIO_PORT_C, 13);
 
 const uint8_t gamma_lut[] = {
     0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
@@ -23,61 +20,54 @@ const uint8_t gamma_lut[] = {
     0x91, 0x96, 0x9B, 0xA0, 0xA5, 0xAA, 0xAF, 0xB4,
 };
 
-void spi_tx_raw(uint8_t b) {
+void spiWriteRaw(uint8_t b) {
   *spi_dr = b; // send command
   while ((!(*spi_sr & (0b1u << 1))) ||
          (*spi_sr & ((0b1u << 7)))) // wait for Tx to complete
     ;
 }
 
-void spi_tx(uint8_t b) {
-  gpio_output(A15, 0); // pull CS# low
-  spi_tx_raw(b);
-  gpio_output(A15, 1); // pull CS# high
+void spiWrite(uint8_t b) {
+  gpioWrite(GPIO_PA15, 0); // pull CS# low
+  spiWriteRaw(b);
+  gpioWrite(GPIO_PA15, 1); // pull CS# high
 }
 
-void spi_cmd(uint8_t b) {
-  gpio_output(A10, 0); // pull D/C# low to issue commands
-  spi_tx(b);
+void spiCommand(uint8_t b) {
+  gpioWrite(GPIO_PA10, 0); // pull D/C# low to issue commands
+  spiWrite(b);
 }
 
-void spi_data(uint8_t b) {
-  gpio_output(A10, 1); // pull D/C# low to issue data
-  spi_tx(b);
+void spiData(uint8_t b) {
+  gpioWrite(GPIO_PA10, 1); // pull D/C# low to issue data
+  spiWrite(b);
 }
 
 int main(void) {
-  gpio A7 = GPIO(GPIO_PORT_A, 7);   // DIN
-  gpio A5 = GPIO(GPIO_PORT_A, 5);   // CLK
-  gpio A15 = GPIO(GPIO_PORT_A, 15); // CS#
-  gpio A10 = GPIO(GPIO_PORT_A, 10); // D/C#
-  gpio C9 = GPIO(GPIO_PORT_C, 9);   // RST
-  gpio C13 = GPIO(GPIO_PORT_C, 13);
-
   uint16_t color;
 
-  systick_enable();
+  sysTickEnable();
 
-  gpio_enable(A7);
-  gpio_enable(A5);
-  gpio_enable(A15);
-  gpio_enable(A10);
-  gpio_enable(C9);
-  gpio_enable(C13);
+  gpioEnable(GPIO_PA7);
+  gpioEnable(GPIO_PA5);
+  gpioEnable(GPIO_PA15);
+  gpioEnable(GPIO_PA10);
+  gpioEnable(GPIO_PC9);
+  gpioEnable(GPIO_PC13);
 
-  gpio_set_mode(A7, GPIO_MODE_ALT);
-  gpio_set_mode(A5, GPIO_MODE_ALT);
-  gpio_set_mode(A15, GPIO_MODE_OUTPUT);
-  gpio_set_mode(A10, GPIO_MODE_OUTPUT);
-  gpio_set_mode(C9, GPIO_MODE_OUTPUT);
-  gpio_set_mode(C13, GPIO_MODE_INPUT);
+  gpioMode(GPIO_PA7, GPIO_MODE_ALT);
+  gpioMode(GPIO_PA5, GPIO_MODE_ALT);
+  gpioMode(GPIO_PA15, GPIO_MODE_OUTPUT);
+  gpioMode(GPIO_PA10, GPIO_MODE_OUTPUT);
+  gpioMode(GPIO_PC9, GPIO_MODE_OUTPUT);
+  gpioMode(GPIO_PC13, GPIO_MODE_INPUT);
 
-  gpio_set_alt(A7, 5); // configure to SPI
-  gpio_set_alt(A5, 5); // configure to SPI
+  gpioAlt(GPIO_PA7, 5); // configure to SPI
+  gpioAlt(GPIO_PA5, 5); // configure to SPI
 
-  gpio_output(C9, 0); // pull RST low to power cycle the display
+  gpioWrite(GPIO_PC9, 0); // pull RST low to power cycle the display
   sleep(20);
-  gpio_output(C9, 1);
+  gpioWrite(GPIO_PC9, 1);
   sleep(20);
 
   *rcc_apb2enr |= (0b1u << 12); // enable SPI1 peripheral clock
@@ -86,81 +76,81 @@ int main(void) {
   *spi_cr1 = 0b0000001101001100;
   sleep(5);
 
-  spi_cmd(0xFD);
-  spi_data(0x12);
+  spiCommand(0xFD);
+  spiData(0x12);
 
-  spi_cmd(0xFD);
-  spi_data(0xB1);
+  spiCommand(0xFD);
+  spiData(0xB1);
 
-  spi_cmd(0xAE);
+  spiCommand(0xAE);
 
-  spi_cmd(0xB3);
-  spi_data(0xF1);
+  spiCommand(0xB3);
+  spiData(0xF1);
 
-  spi_cmd(0xCA);
-  spi_data(0x7F);
+  spiCommand(0xCA);
+  spiData(0x7F);
 
-  spi_cmd(0xA2);
-  spi_data(0x00);
+  spiCommand(0xA2);
+  spiData(0x00);
 
-  spi_cmd(0xA1);
-  spi_data(0x00);
+  spiCommand(0xA1);
+  spiData(0x00);
 
-  spi_cmd(0xA0);
-  spi_data(0b00100100);
+  spiCommand(0xA0);
+  spiData(0b00100100);
 
-  spi_cmd(0xB5);
-  spi_data(0x00);
+  spiCommand(0xB5);
+  spiData(0x00);
 
-  spi_cmd(0xAB);
-  spi_data(0x1);
+  spiCommand(0xAB);
+  spiData(0x1);
 
-  spi_cmd(0xB4);
-  spi_data(0xA0);
-  spi_data(0xB5);
-  spi_data(0x55);
+  spiCommand(0xB4);
+  spiData(0xA0);
+  spiData(0xB5);
+  spiData(0x55);
 
-  spi_cmd(0xC1);
-  spi_data(0xC8);
-  spi_data(0x80);
-  spi_data(0xC8);
+  spiCommand(0xC1);
+  spiData(0xC8);
+  spiData(0x80);
+  spiData(0xC8);
 
-  spi_cmd(0xC7);
-  spi_data(0x0F);
+  spiCommand(0xC7);
+  spiData(0x0F);
 
-  spi_cmd(0xB8);
+  spiCommand(0xB8);
   for (int i = 0; i < 63; i++)
-    spi_data(gamma_lut[i]);
+    spiData(gamma_lut[i]);
 
-  spi_cmd(0xB1);
-  spi_data(0x32);
+  spiCommand(0xB1);
+  spiData(0x32);
 
-  spi_cmd(0xB2);
-  spi_data(0xA4);
-  spi_data(0x00);
-  spi_data(0x00);
+  spiCommand(0xB2);
+  spiData(0xA4);
+  spiData(0x00);
+  spiData(0x00);
 
-  spi_cmd(0xBB);
-  spi_data(0x17);
+  spiCommand(0xBB);
+  spiData(0x17);
 
-  spi_cmd(0xB6);
-  spi_data(0x01);
+  spiCommand(0xB6);
+  spiData(0x01);
 
-  spi_cmd(0xBE);
-  spi_data(0x05);
+  spiCommand(0xBE);
+  spiData(0x05);
 
-  spi_cmd(0xA6);
+  spiCommand(0xA6);
 
-  spi_cmd(0xAF);
+  spiCommand(0xAF);
 
   sleep(5);
 
-  spi_cmd(0x5C);
+  spiCommand(0x5C);
   *spi_cr1 &= ~(1u << 6); // disable SPI
   *spi_cr1 |= (1u << 11); // use 16-bit frames
   *spi_cr1 |= (1u << 6);  // enable SPI
 
-  gpio_output(A10, 1);
+  gpioWrite(GPIO_PA10, 1);
 
   extern uint16_t frames_START;
   extern uint16_t frames_END;
@@ -171,13 +161,13 @@ int main(void) {
   for (;;) {
     uint16_t *fp = &frames_START + frame * frame_SIZE;
 
-    gpio_output(A15, 0); // pull CS# low
+    gpioWrite(GPIO_PA15, 0); // pull CS# low
     for (int i = 0; i < frame_SIZE; i++) {
       *((volatile uint16_t *)spi_dr) = fp[i]; // send command
       while (*spi_sr & ((0b1u << 7)))         // wait for Tx to complete
         ;
     }
-    gpio_output(A15, 1); // pull CS# high
+    gpioWrite(GPIO_PA15, 1); // pull CS# high
 
     if (++frame >= frame_COUNT)
       frame = 0;

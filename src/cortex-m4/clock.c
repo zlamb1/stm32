@@ -1,8 +1,8 @@
 #include <stdint.h>
 
-#include "bits.h"
-
 #include "cortex-m4/clock.h"
+
+#include "hal/bits.h"
 
 volatile uint32_t *const SYST_CSR = (volatile uint32_t *)0xE000E010;
 volatile uint32_t *const SYST_RVR = (volatile uint32_t *)0xE000E014;

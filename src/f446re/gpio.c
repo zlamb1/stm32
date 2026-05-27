@@ -1,10 +1,10 @@
 #include <stdint.h>
 
-#include "arm.h"
-#include "bits.h"
-
 #include "f446re/gpio.h"
 #include "f446re/rcc.h"
+
+#include "hal/arm.h"
+#include "hal/bits.h"
 
 #define GPIO_BASE 0x40020000
 #define GPIO_OTYPE_PUSH_PULL 0

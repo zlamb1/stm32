@@ -1,6 +1,7 @@
 #include <stdint.h>
 
-#include "f446re/clock.h"
+#include "clock.h"
+
 #include "f446re/gpio.h"
 #include "f446re/rcc.h"
 
@@ -50,7 +51,7 @@ void spiData(uint8_t b) {
 }
 
 int main(void) {
-  sysTickEnable();
+  clockEnable();
 
   gpioEnable(MOSI);
   gpioEnable(SCLK);

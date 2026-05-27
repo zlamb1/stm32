@@ -8,7 +8,7 @@ COMPILE_COMMANDS ?= $(O)/compile_commands.json
 ELF ?= $(O)/boot.elf
 LNK ?= src/f446re.ld
 ASM_SRCS ?= src/f446re/boot.S src/bin.S
-SRCS := src/main.c src/f446re/clock.c src/f446re/gpio.c
+SRCS := src/main.c src/cortex-m4/clock.c src/f446re/clock.c src/f446re/gpio.c
 SYMS ?= $(O)/boot.syms
 OBJS := $(ASM_SRCS:%.S=$(O)/%.o) $(SRCS:%.c=$(O)/%.o)
 DEPS := $(OBJS:.o=.d)

@@ -1,10 +1,10 @@
 O ?= build
 BIN ?= $(O)/boot.bin
-CFLAGS := -g -nostdlib -ffreestanding -fno-strict-aliasing -mcpu=cortex-m4 -march=armv7e-m -mthumb
+CFLAGS := -g -O2 -nostdlib -ffreestanding -fno-strict-aliasing -mcpu=cortex-m4 -march=armv7e-m -mthumb
 CROSS_COMPILER ?= arm-none-eabihf
 ELF ?= $(O)/boot.elf
 LNK ?= src/f446re.ld
-SRCS := src/boot.S src/main.c src/f446re.c
+SRCS := src/boot.S src/main.c src/f446re.c src/bin.S
 SYMS ?= $(O)/boot.syms
 
 .PHONY: all clean

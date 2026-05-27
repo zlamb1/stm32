@@ -55,3 +55,36 @@ void gpio_set_mode(gpio g, gpio_mode mode) {
   m |= ((mode & 0b11) << (g.pin * 2));
   gr->mode = m;
 }
+
+void gpio_set_alt(gpio g, uint8_t alt) {
+  __auto_type gr = gpio_get_reg(g.port);
+  if (g.pin < 8) {
+    gr->afrl =
+        (gr->afrl & ~(0b1111u << (g.pin * 4))) | ((uint32_t)alt << (g.pin * 4));
+  } else {
+    gr->afrh = (gr->afrh & ~(0b1111u << ((g.pin - 8) * 4))) |
+               ((uint32_t)alt << ((g.pin - 8) * 4));
+  }
+}
+
+void systick_enable(void) {
+  volatile uint32_t *stcsr = (volatile uint32_t *)0xE000E010;
+  volatile uint32_t *strvr = (volatile uint32_t *)0xE000E014;
+  volatile uint32_t *stcvr = (volatile uint32_t *)0xE000E018;
+  *strvr = 0;
+  *stcvr = 0;
+  *stcsr = (*stcsr & ~0b111) | 0b001;
+}
+
+void sleep(uint16_t ms) {
+  volatile uint32_t *stcsr = (volatile uint32_t *)0xE000E010;
+  volatile uint32_t *strvr = (volatile uint32_t *)0xE000E014;
+  volatile uint32_t *stcvr = (volatile uint32_t *)0xE000E018;
+  *strvr = (uint32_t)ms * 18750;
+  *stcvr = 0;
+  for (;;) {
+    if (*stcsr & (0b1u << 16))
+      break;
+  }
+  __asm__ volatile("" ::: "memory"); // prevent reordering
+}

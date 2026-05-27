@@ -4,11 +4,7 @@
 #include <stdint.h>
 
 #define GPIO(_port, _pin)                                                      \
-  ({                                                                           \
-    _Static_assert(_port <= GPIO_PORT_MAX, "invalid GPIO port");               \
-    _Static_assert(_pin <= 15, "invalid GPIO pin [must be 1-15]");             \
-    (gpio){.port = _port, .pin = _pin};                                        \
-  })
+  (gpio) { .port = _port, .pin = _pin }
 #define GPIO_BASE 0x40020000
 #define GPIO_OTYPE_PUSH_PULL 0
 #define GPIO_OTYPE_OPEN_DRAIN 1
@@ -23,6 +19,7 @@
 
 #define RCC_BASE 0x40023800
 #define RCC_AHB1ENR 0x30
+#define RCC_APB2ENR 0x44
 
 typedef enum {
   GPIO_PORT_A = 0,
@@ -70,5 +67,9 @@ gpio_mode gpio_get_mode(gpio g);
 uint8_t gpio_input(gpio g);
 void gpio_output(gpio g, uint8_t v);
 void gpio_set_mode(gpio g, gpio_mode mode);
+void gpio_set_alt(gpio g, uint8_t alt);
+
+void systick_enable(void);
+void sleep(uint16_t ms);
 
 #endif

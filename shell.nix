@@ -4,6 +4,7 @@ let
 in
 pkgs.mkShell {
     nativeBuildInputs = with pkgs.buildPackages; [
+        bear
         cross.buildPackages.gdb
         cross.buildPackages.gcc
     ];

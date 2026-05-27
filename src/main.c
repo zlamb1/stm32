@@ -163,13 +163,13 @@ int main(void) {
   for (;;) {
     uint16_t *fp = &frames_START + frame * frame_SIZE;
 
-    gpioWrite(CS, 0); // pull CS# low
+    gpioWrite(CS, 0);
     for (int i = 0; i < frame_SIZE; i++) {
       *((volatile uint16_t *)spi_dr) = fp[i]; // send command
       while (*spi_sr & ((0b1u << 7)))         // wait for Tx to complete
         ;
     }
-    gpioWrite(CS, 1); // pull CS# high
+    gpioWrite(CS, 1);
 
     if (++frame >= frame_COUNT)
       frame = 0;

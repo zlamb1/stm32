@@ -49,7 +49,8 @@ typedef struct {
 } gpio;
 
 #define X(NAME, N) GPIO_PINS(Y, NAME)
-#define Y(PIN, NAME) extern const gpio GPIO_P##NAME##PIN;
+#define Y(PIN, NAME)                                                           \
+  static const gpio GPIO_P##NAME##PIN = {.port = GPIO_PORT_##NAME, .pin = PIN};
 GPIO_PORTS(X)
 #undef Y
 #undef X

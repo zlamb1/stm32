@@ -11,6 +11,12 @@ static volatile uint16_t *spi_cr1 = (volatile uint16_t *)0x40013000;
 static volatile uint16_t *spi_sr = (volatile uint16_t *)0x40013008;
 static volatile uint8_t *spi_dr = (volatile uint8_t *)0x4001300C;
 
+const gpio MOSI = GPIO_PA7;
+const gpio SCLK = GPIO_PA5;
+const gpio CS = GPIO_PA15;
+const gpio DC = GPIO_PA10;
+const gpio RST = GPIO_PC9;
+
 const uint8_t gamma_lut[] = {
     0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
     0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x15, 0x17, 0x19, 0x1B,
@@ -28,46 +34,42 @@ void spiWriteRaw(uint8_t b) {
 }
 
 void spiWrite(uint8_t b) {
-  gpioWrite(GPIO_PA15, 0); // pull CS# low
+  gpioWrite(CS, 0);
   spiWriteRaw(b);
-  gpioWrite(GPIO_PA15, 1); // pull CS# high
+  gpioWrite(CS, 1);
 }
 
 void spiCommand(uint8_t b) {
-  gpioWrite(GPIO_PA10, 0); // pull D/C# low to issue commands
+  gpioWrite(DC, 0);
   spiWrite(b);
 }
 
 void spiData(uint8_t b) {
-  gpioWrite(GPIO_PA10, 1); // pull D/C# low to issue data
+  gpioWrite(DC, 1);
   spiWrite(b);
 }
 
 int main(void) {
-  uint16_t color;
-
   sysTickEnable();
 
-  gpioEnable(GPIO_PA7);
-  gpioEnable(GPIO_PA5);
-  gpioEnable(GPIO_PA15);
-  gpioEnable(GPIO_PA10);
-  gpioEnable(GPIO_PC9);
-  gpioEnable(GPIO_PC13);
+  gpioEnable(MOSI);
+  gpioEnable(SCLK);
+  gpioEnable(CS);
+  gpioEnable(DC);
+  gpioEnable(RST);
 
-  gpioMode(GPIO_PA7, GPIO_MODE_ALT);
-  gpioMode(GPIO_PA5, GPIO_MODE_ALT);
-  gpioMode(GPIO_PA15, GPIO_MODE_OUTPUT);
-  gpioMode(GPIO_PA10, GPIO_MODE_OUTPUT);
-  gpioMode(GPIO_PC9, GPIO_MODE_OUTPUT);
-  gpioMode(GPIO_PC13, GPIO_MODE_INPUT);
+  gpioMode(MOSI, GPIO_MODE_ALT);
+  gpioMode(SCLK, GPIO_MODE_ALT);
+  gpioMode(CS, GPIO_MODE_OUTPUT);
+  gpioMode(DC, GPIO_MODE_OUTPUT);
+  gpioMode(RST, GPIO_MODE_OUTPUT);
 
-  gpioAlt(GPIO_PA7, 5); // configure to SPI
-  gpioAlt(GPIO_PA5, 5); // configure to SPI
+  gpioAlt(MOSI, 5); // configure to SPI
+  gpioAlt(SCLK, 5); // configure to SPI
 
-  gpioWrite(GPIO_PC9, 0); // pull RST low to power cycle the display
+  gpioWrite(RST, 0); // pull RST low to power cycle the display
   sleep(20);
-  gpioWrite(GPIO_PC9, 1);
+  gpioWrite(RST, 1);
   sleep(20);
 
   *rcc_apb2enr |= (0b1u << 12); // enable SPI1 peripheral clock
@@ -150,7 +152,7 @@ int main(void) {
   *spi_cr1 |= (1u << 11); // use 16-bit frames
   *spi_cr1 |= (1u << 6);  // enable SPI
 
-  gpioWrite(GPIO_PA10, 1);
+  gpioWrite(DC, 1);
 
   extern uint16_t frames_START;
   extern uint16_t frames_END;
@@ -161,13 +163,13 @@ int main(void) {
   for (;;) {
     uint16_t *fp = &frames_START + frame * frame_SIZE;
 
-    gpioWrite(GPIO_PA15, 0); // pull CS# low
+    gpioWrite(CS, 0); // pull CS# low
     for (int i = 0; i < frame_SIZE; i++) {
       *((volatile uint16_t *)spi_dr) = fp[i]; // send command
       while (*spi_sr & ((0b1u << 7)))         // wait for Tx to complete
         ;
     }
-    gpioWrite(GPIO_PA15, 1); // pull CS# high
+    gpioWrite(CS, 1); // pull CS# high
 
     if (++frame >= frame_COUNT)
       frame = 0;

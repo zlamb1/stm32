@@ -18,13 +18,6 @@
 #define GPIO_PUPD_PULL_DOWN 0b10
 #define GPIO_AF(n) ((n) & 0xF)
 
-#define X(NAME, N) GPIO_PINS(Y, NAME)
-#define Y(PIN, NAME)                                                           \
-  const gpio GPIO_P##NAME##PIN = {.port = GPIO_PORT_##NAME, .pin = PIN};
-GPIO_PORTS(X)
-#undef Y
-#undef X
-
 typedef struct {
   uint32_t mode;
   uint32_t otype;

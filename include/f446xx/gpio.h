@@ -1,5 +1,5 @@
-#ifndef F446RE_GPIO_H
-#define F446RE_GPIO_H 1
+#ifndef F446XX_GPIO_H
+#define F446XX_GPIO_H 1
 
 #include "hal/gpio.h"
 

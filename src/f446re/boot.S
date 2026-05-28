@@ -47,7 +47,7 @@ _start:
 .section .vectors, "aw"
 .global vector_table
 
-#include "f446re/vector.h"
+#include "f446xx/vector.h"
 
 vector_table:
     .rept VECTOR_TABLE_COUNT

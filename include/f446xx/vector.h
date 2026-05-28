@@ -1,5 +1,5 @@
-#ifndef F446RE_VECTOR_H
-#define F446RE_VECTOR_H 1
+#ifndef F446XX_VECTOR_H
+#define F446XX_VECTOR_H 1
 
 #define VECTOR_TABLE_COUNT 113
 

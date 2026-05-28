@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#include "f446re/gpio.h"
-#include "f446re/rcc.h"
+#include "f446xx/gpio.h"
+#include "f446xx/rcc.h"
 
 #include "hal/clock.h"
 
@@ -65,8 +65,8 @@ int main(void) {
   gpioMode(DC, GPIO_MODE_OUTPUT);
   gpioMode(RST, GPIO_MODE_OUTPUT);
 
-  gpioAlt(MOSI, 5); // configure to SPI
-  gpioAlt(SCLK, 5); // configure to SPI
+  gpioAlt(MOSI, GPIO_AF5); // configure to SPI
+  gpioAlt(SCLK, GPIO_AF5); // configure to SPI
 
   gpioWrite(RST, 0); // pull RST low to power cycle the display
   sleep(20);

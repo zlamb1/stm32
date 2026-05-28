@@ -9,6 +9,25 @@ typedef enum {
   GPIO_MODE_ALT,
 } gpio_mode;
 
+typedef enum {
+  GPIO_AF0,
+  GPIO_AF1,
+  GPIO_AF2,
+  GPIO_AF3,
+  GPIO_AF4,
+  GPIO_AF5,
+  GPIO_AF6,
+  GPIO_AF7,
+  GPIO_AF8,
+  GPIO_AF9,
+  GPIO_AF10,
+  GPIO_AF11,
+  GPIO_AF12,
+  GPIO_AF13,
+  GPIO_AF14,
+  GPIO_AF15,
+} gpio_alt;
+
 /**
  * @brief Enable a GPIO pin for usage.
  * @param g The GPIO pin to enable.
@@ -47,6 +66,6 @@ unsigned int gpioRead(gpio g);
  * @param g The GPIO pin to configure.
  * @param alt The alternate function to use.
  */
-void gpioAlt(gpio g, unsigned alt);
+void gpioAlt(gpio g, gpio_alt alt);
 
 #endif

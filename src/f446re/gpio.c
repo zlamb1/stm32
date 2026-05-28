@@ -1,10 +1,11 @@
 #include <stdint.h>
 
-#include "f446re/gpio.h"
-#include "f446re/rcc.h"
+#include "f446xx/gpio.h"
+#include "f446xx/rcc.h"
 
 #include "hal/arm.h"
 #include "hal/bits.h"
+#include "hal/gpio.h"
 
 #define GPIO_BASE 0x40020000
 #define GPIO_OTYPE_PUSH_PULL 0
@@ -83,7 +84,7 @@ unsigned int gpioRead(gpio g) {
   return BIT_READ(reg->id, g.pin);
 }
 
-void gpioAlt(gpio g, unsigned alt) {
+void gpioAlt(gpio g, gpio_alt alt) {
   volatile gpio_reg *reg = gpioReg(g);
   if (g.pin < 8)
     BITS_WRITE(reg->afl, g.pin * 4, 0xF, alt);

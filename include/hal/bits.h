@@ -1,5 +1,5 @@
-#ifndef BITS_H
-#define BITS_H 1
+#ifndef HAL_BITS_H
+#define HAL_BITS_H 1
 
 #define BITS_CLEAR(DST, POS, MASK) ((DST) &= ~((MASK) << (POS)))
 #define BITS_SET(DST, POS, MASK) ((DST) |= ((MASK) << (POS)))

@@ -9,6 +9,7 @@ typedef struct spinlock spinlock;
  * @brief Attempt to lock a spinlock.
  * @note Can spuriously fail.
  * @param sp The spinlock to lock.
+ * @return True if the spinlock was locked, false otherwise.
  */
 bool spinTryLock(spinlock *sp);
 
